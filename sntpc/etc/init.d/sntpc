@@ -1,0 +1,52 @@
+#!/sbin/openrc-run
+
+description="NTP client"
+description_testrun="Do not adjust time, just display offset and delay"
+description_adjust="Run adjustment once"
+
+extra_commands="testrun adjust"
+
+name=${RC_SVCNAME}
+
+command="${SNTPC_BIN:-"/usr/sbin/${name}"}"
+command_args="${SNTPC_OPTS:-"-v"}"
+
+required_files="$cfgfile"
+
+depend() {
+	need net
+	after firewall
+}
+
+start() {
+	[ "$SNTPC_INTERVAL" = "0" ] && adjust && return
+	ebegin "Starting ${name}"
+		start-stop-daemon --start --quiet \
+			--name ${name} \
+			--exec ${command} \
+			-- \
+			-i ${SNTPC_INTERVAL} \
+			${command_args} -d \
+			${SNTPC_HOST}
+	eend $?
+}
+
+stop() {
+	ebegin "Stopping ${name}"
+		start-stop-daemon --stop --quiet \
+			--name ${name} \
+			--exec ${command} 
+	eend $?
+}
+
+testrun() {
+	ebegin "Display offset and delay from NTP source ${SNTPC_HOST}"
+		${command} ${sommand_args} -n ${SNTPC_HOST}
+	eend $?
+}
+
+adjust() {
+	ebegin "Setting time from NTP source ${SNTPC_HOST}"
+		${command} ${command_args} ${SNTPC_HOST}
+	eend $?
+}
