@@ -1,0 +1,17 @@
+#
+# Set time sync interval (in seconds) here.
+# Setting SNTPC_INTERVAL to 0 will make sntp run once and just exit
+#
+
+# Interval in seconds
+#SNTPC_INTERVAL="0"
+SNTPC_INTERVAL="43231"
+
+# The NTP server to use as time source
+SNTPC_HOST=pool.ntp.org
+
+# Location of the sntpc binary executable file
+#SNTPC_BIN="/usr/sbin/sntpc"
+
+# Additional arguments - verbose
+#SNTPC_OPTS="-v"
