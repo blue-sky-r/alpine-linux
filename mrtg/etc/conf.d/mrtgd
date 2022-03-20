@@ -1,0 +1,34 @@
+# /etc/conf.d/mrtgd
+
+# mrtg home directory
+#MRTG_HOME="/var/www/localhost/htdocs/mrtg"
+
+# Location of the mrtg configuration file
+#MRTG_CFG="/etc/mrtg/mrtg.conf"
+
+# Location of the mrtg log file
+#MRTG_LOG="/var/log/mrtg/mrtg.log"
+
+# Location of the mrtg binary executable file
+#MRTG_BIN="/usb/bin/mrtg"
+
+# Additional mrtgd arguments
+#MRTGD_OPTS="--daemon"
+
+# Location of the mrtgd pid file
+#MRTGD_PID="/var/run/mrtgd.pid"
+
+# Location of the mrtgd lock file
+#MRTGD_LOCK="/var/run/mrtgd.lock"
+
+# Location of the mrtgd config cache (ok) file
+#MRTGD_OK="${MRTG_HOME}/mrtg.ok"
+
+# Start mrtgd at minute boundary (0 for no boudary)
+#MRTG_ATM="5"
+
+# mrtg user
+#MRTG_USR="mrtg"
+
+# mrtg group
+#MRTG_GRP="nogroup"
