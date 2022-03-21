@@ -1,0 +1,154 @@
+#!/sbin/openrc-run
+
+# Copyright (c) 2022 Robert BlueSky version 2022.03.21
+# Distributed under the terms of the GNU General Public License v2
+
+description="MRTG monitoring deamon"
+description_start="Start at (default 5m) min boundary"
+description_testrun="Single execution with detailed logging"
+description_checkconfig="Verify configuration file"
+description_reload="Reload configuration"
+
+extra_commands="checkconfig cleanup html"
+extra_started_commands="reload"
+extra_stopped_commands="testrun"
+
+# NOTE: MRTG[D]_* variables are defined in /etc/conf.d/mrtgd
+
+# defaults
+#
+homedir="${MRTG_HOME:-"/var/www/localhost/htdocs/mrtg"}"
+cfgfile="${MRTG_CFG:-"/etc/mrtg/mrtg.cfg"}"
+logfile="${MRTG_LOG:-"/var/log/mrtg.log"}"
+command="${MRTG_BIN:-"/usr/bin/mrtg"}"
+command_args="${MRTGD_OPTS:-"--daemon"}"
+pidfile="${MRTGD_PID:-"/var/run/${RC_SVCNAME}.pid"}"
+lockfile="${MRTGD_LOCK:-"${homedir}/${RC_SVCNAME}.lock"}"
+okfile="${MRTG_OK:-"${homedir}/${RC_SVCNAME}.ok"}"
+atmin="${MRTG_ATM:-5}"
+user="${MRTG_USR:-"mrtg"}"
+group="${MRTG_GRP:-"nogroup"}"
+
+# prepare mrtg env and pars
+#
+env="env LANG=C"
+syspar="--pid-file=${pidfile} \
+	--user=${user} --group=${group} \
+	--logging ${logfile} \
+	--lock-file ${lockfile} \
+	--confcache-file ${okfile}"
+
+required_files="$cfgfile"
+
+depend() {
+	need net
+	use logger
+	after firewall
+}
+
+add_group() {	
+	if ! grep -q "$group" /etc/group ; then
+		ebegin "creating group $group"
+		addgroup $group
+	fi
+	eend $?
+}
+
+add_user() {	
+	if ! grep -q "$user" /etc/passwd ; then
+		ebegin "creating user $user with group $group"
+		adduser -h "$homedir"  -g "$description" -s /sbin/nologin -G $group -D $user
+	fi
+	eend $?
+}
+
+chk_dir() {
+	einfo "checking home dir ${homedir}"
+	checkpath -d -q -m 0755 -o ${user}:${group} "${homedir}"
+	einfo "checking log file ${logfile}"
+	checkpath -f -q -m 0744 -o ${user}:${group} "${logfile}"	
+	eend $?
+}
+
+sleep_till_min() {
+	[ ! $atmin     ] && return
+	[ $atmin -eq 0 ] && return 
+
+	local now=$(date +%s)
+	local atsec=$(( atmin * 60 ))
+	local tstamp=$(( atsec*(now/atsec + 1) ))
+	local delta=$(( tstamp - now ))
+
+	ebegin "sleeping for $delta sec till $(date +"%T" -d @$tstamp)"
+	sleep $delta
+}
+
+checkconfig() {
+	#add_group
+	#add_user
+	chk_dir
+	ebegin "${RC_SVCNAME} - checking $cfgfile"
+	if [ ! -f "$cfgfile" ] ; then
+		ewarn "${cfgfile} does not exist."
+		return 1
+	fi
+	$env ${command} ${syspar} --check "$cfgfile"
+	eend $?
+}
+
+testrun() {
+	checkconfig || return 1
+
+	ebegin "test run, check ${logfile} for details"
+	$env ${command} --debug="snpo,log" ${syspar} "${cfgfile}"
+	eend $?
+}
+
+start() {
+	checkconfig || return 1
+
+	sleep_till_min
+
+	ebegin "Starting ${RC_SVCNAME}"
+	$env start-stop-daemon --start --quiet \
+		--pidfile "${pidfile}" \
+		--exec "${command}" \
+		-- \
+		${syspar} \
+		${command_args} "${cfgfile}"
+	eend $?
+}
+
+stop() {
+	ebegin "Stopping ${RC_SVCNAME}"
+	start-stop-daemon --stop --quiet --pidfile "${pidfile}"
+	eend $?
+}
+
+cleanup() {
+	ebegin "killall ${RC_SVCNAME} and removing lock.file config.cache pid.file"
+	pkill -f "${command}"
+	[ -f "${pidfile}"   ] && rm -f "${pidfile}"
+	[ -f "${lockfile}"  ] && rm -f "${lockfile}"
+	[ -f "${okfile}"    ] && rm -f "${okfile}"
+}
+
+reload() {
+	ebegin "Reloading ${RC_SVCNAME} cfg and log files"
+	if ! service_started "${RC_SVCNAME}" ; then
+		eerror "${RC_SVCNAME} isn't running"
+		return 1
+	fi
+	stop
+	einfo "sleeping for 5 sec"
+	sleep 5
+	cleanup
+	start
+}
+
+html() {
+	ebegin "Rebuilding html files"
+	indexmaker --output="${homedir}/index.html" "${cfgfile}"
+	checkpath -d -q -m 0755 -o ${user}:${group} "${homedir}"
+	eend $?
+}
