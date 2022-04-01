@@ -1,17 +1,17 @@
 #!/sbin/openrc-run
 
-# Copyright (c) 2022 Robert BlueSky version 2022.03.21
+# Copyright (c) 2022 Robert BlueSky version 2022.04.01
 # Distributed under the terms of the GNU General Public License v2
 
 description="MRTG monitoring deamon"
-description_start="Start at (default 5m) min boundary"
+description_startat="Start at (default 5m) min boundary"
 description_testrun="Single execution with detailed logging"
 description_checkconfig="Verify configuration file"
 description_reload="Reload configuration"
 
-extra_commands="checkconfig cleanup html"
+extra_commands="checkconfig startat cleanup html"
 extra_started_commands="reload"
-extra_stopped_commands="testrun"
+extra_stopped_commands="testrun startat"
 
 # NOTE: MRTG[D]_* variables are defined in /etc/conf.d/mrtgd
 
@@ -105,6 +105,19 @@ testrun() {
 }
 
 start() {
+	checkconfig || return 1
+
+	ebegin "Starting ${RC_SVCNAME}"
+	$env start-stop-daemon --start --quiet \
+		--pidfile "${pidfile}" \
+		--exec "${command}" \
+		-- \
+		${syspar} \
+		${command_args} "${cfgfile}"
+	eend $?
+}
+
+startat() {
 	checkconfig || return 1
 
 	sleep_till_min
