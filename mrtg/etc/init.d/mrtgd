@@ -1,6 +1,6 @@
 #!/sbin/openrc-run
 
-# Copyright (c) 2022 Robert BlueSky version 2022.04.03
+# Copyright (c) 2022 Robert BlueSky version 2022.04.04
 # Distributed under the terms of the GNU General Public License v2
 
 description="MRTG monitoring deamon"
@@ -20,6 +20,7 @@ extra_stopped_commands="testrun startat"
 #
 homedir="${MRTG_HOME:-"/var/www/localhost/htdocs/mrtg"}"
 cfgfile="${MRTG_CFG:-"/etc/mrtg/mrtg.cfg"}"
+cfgdir=$(dirname ${cfgfile})
 logfile="${MRTG_LOG:-"/var/log/mrtg.log"}"
 command="${MRTG_BIN:-"/usr/bin/mrtg"}"
 command_args="${MRTGD_OPTS:-"--daemon"}"
@@ -118,13 +119,13 @@ _start() {
 
 startnow() {
 	checkconfig || return 1
-  _start
+    _start
 }
 
 start() {
 	checkconfig || return 1
 	sleep_till_min
-  _start
+    _start
 }
 
 stop() {
@@ -158,5 +159,11 @@ html() {
 	ebegin "Rebuilding html files"
 	indexmaker --output="${homedir}/index.html" "${cfgfile}"
 	checkpath -d -q -m 0755 -o ${user}:${group} "${homedir}"
+	# check all included cfg for directive: Directory[target]: target_subdir
+    for subdir in $(find ${cfgdir} -name "*.cfg" -exec awk '/^Directory/ {print $2}' '{}' \; | uniq )
+    {
+        einfo "checking www subdir ${homedir}/${subdir}"
+  	    checkpath -d -q -m 0755 -o ${user}:${group} "${homedir}/${subdir}"
+    }
 	eend $?
 }
