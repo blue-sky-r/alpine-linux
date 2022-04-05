@@ -160,10 +160,10 @@ html() {
 	indexmaker --output="${homedir}/index.html" "${cfgfile}"
 	checkpath -d -q -m 0755 -o ${user}:${group} "${homedir}"
 	# check all included cfg for directive: Directory[target]: target_subdir
-    for subdir in $(find ${cfgdir} -name "*.cfg" -exec awk '/^Directory/ {print $2}' '{}' \; | uniq )
-    {
-        einfo "checking www subdir ${homedir}/${subdir}"
-  	    checkpath -d -q -m 0755 -o ${user}:${group} "${homedir}/${subdir}"
-    }
+	for subdir in $(find ${cfgdir} -name "*.cfg" -exec awk '/^Directory/ {print $2}' '{}' \; | uniq )
+	do
+    	einfo "checking www subdir ${homedir}/${subdir}"
+  		checkpath -d -q -m 0755 -o ${user}:${group} "${homedir}/${subdir}"
+	done
 	eend $?
 }
