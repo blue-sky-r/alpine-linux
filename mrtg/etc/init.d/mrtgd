@@ -1,6 +1,6 @@
 #!/sbin/openrc-run
 
-# Copyright (c) 2022 Robert BlueSky version 2022.04.04
+# Copyright (c) 2022 Robert BlueSky version 2022.04.07
 # Distributed under the terms of the GNU General Public License v2
 
 description="MRTG monitoring deamon"
@@ -10,7 +10,7 @@ description_testrun="Single execution with detailed logging"
 description_checkconfig="Verify configuration file"
 description_reload="Reload configuration"
 
-extra_commands="checkconfig startnow cleanup html"
+extra_commands="checkconfig startnow cleanup html log"
 extra_started_commands="reload"
 extra_stopped_commands="testrun startat"
 
@@ -68,7 +68,7 @@ chk_dir() {
 	einfo "checking home dir ${homedir}"
 	checkpath -d -q -m 0755 -o ${user}:${group} "${homedir}"
 	einfo "checking log file ${logfile}"
-	checkpath -f -q -m 0744 -o ${user}:${group} "${logfile}"	
+	checkpath -f -q -m 0644 -o ${user}:${group} "${logfile}"
 	eend $?
 }
 
@@ -119,13 +119,13 @@ _start() {
 
 startnow() {
 	checkconfig || return 1
-    _start
+	_start
 }
 
 start() {
 	checkconfig || return 1
 	sleep_till_min
-    _start
+	_start
 }
 
 stop() {
@@ -166,4 +166,12 @@ html() {
   		checkpath -d -q -m 0755 -o ${user}:${group} "${homedir}/${subdir}"
 	done
 	eend $?
+}
+
+log() {
+    einfo "To access mrtg log files please use:"
+	for logf in $(find ${homedir} -name "*.log" -type f )
+	do
+    	einfo "mrtg-show-log.sh ${logf} | more"
+	done
 }
