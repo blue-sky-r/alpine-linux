@@ -169,9 +169,9 @@ html() {
 }
 
 log() {
-    einfo "To access mrtg log files please use:"
-	for logf in $(find ${homedir} -name "*.log" -type f )
+    einfo "To access individual mrtg target log files please use:"
+	for tlogf in $(find ${homedir} -name "*.log" -type f )
 	do
-    	einfo "mrtg-show-log.sh ${logf} | more"
+    	einfo "mrtg-show-log.sh ${tlogf} | more"
 	done
 }
