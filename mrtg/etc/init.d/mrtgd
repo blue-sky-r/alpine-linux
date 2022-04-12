@@ -10,7 +10,7 @@ description_testrun="Single execution with detailed logging"
 description_checkconfig="Verify configuration file"
 description_reload="Reload configuration"
 
-extra_commands="checkconfig startnow cleanup html log"
+extra_commands="checkconfig startnow cleanup html log traffic"
 extra_started_commands="reload"
 extra_stopped_commands="testrun startat"
 
@@ -174,4 +174,10 @@ log() {
 	do
     	einfo "mrtg-show-log.sh ${tlogf} | more"
 	done
+}
+
+traffic() {
+    einfo "Traffic summary for current and previous period:"
+    mrtg-traffic-sum --range=previous "${cfgfile}"
+    mrtg-traffic-sum --range=current  "${cfgfile}"
 }
