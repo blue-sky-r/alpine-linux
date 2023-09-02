@@ -1,0 +1,8 @@
+/var/log/mrtg.log {
+	weekly
+	missingok
+	notifempty
+    postrotate
+    /etc/init.d/mrtgd --quiet --ifstarted reload
+    endscript
+}

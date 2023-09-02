@@ -1,0 +1,14 @@
+# remotely collected logs
+#
+/var/log/*/rsyslog.log {
+	#monthly
+	weekly
+	rotate 8
+	missingok
+	notifempty
+	nocreate
+	sharedscripts
+        postrotate
+                /etc/init.d/rsyslog --ifstarted reload >/dev/null
+        endscript
+}
