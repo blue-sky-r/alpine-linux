@@ -1,0 +1,21 @@
+#!/sbin/openrc-run
+
+# Copyright (c) Natanael Copa
+# This code is licensed under BSD-2-Clause
+
+description="Sets the HDD specific parameters for this machine HW."
+
+hdparm=/sbin/hdparm
+
+# idle3 for WD drives (default 8s is killing the drive in linux)
+idle3='-J 66 --please-destroy-my-drive /dev/sda'
+
+depend() {
+	keyword -prefix -lxc -docker
+}
+
+start() {
+	ebegin "Setting HDD ..."
+	$hdparm $idle3 && einfo "idle3 set $idle3"
+	eend $?
+}
