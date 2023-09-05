@@ -19,11 +19,11 @@ _about_="disk free probe for mrtg"
 
 # version
 #
-_version_="2023.09.04"
+_version_="2023.09.05"
 
 # github
 #
-_github_="https://github.com/blue-sky-r/blob/main/alpine-linux/mrtg/usr/bin/mrtg-probe-df.sh"
+_github_="https://github.com/blue-sky-r/alpine-linux/blob/main/mrtg/usr/bin/mrtg-probe-df.sh"
 
 # default mount-point
 #
@@ -36,8 +36,8 @@ mp='/'
 
 usage: $0 [-h] [-d] [[mount1] [mount2]]
 
--h    ... show this usage help
--d    ... additional debug info
+-h       ... show this usage help
+-d       ... print additional debug info
 mount1   ... mount point I (default $mp)
 mount2   ... mount point O (default $mp)
 
