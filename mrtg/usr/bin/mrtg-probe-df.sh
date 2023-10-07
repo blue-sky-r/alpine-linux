@@ -74,7 +74,7 @@ MOUNTO=${2:-$mp}
 # 1-k blocks
 [ ! $percent ] && df -k | awk '/'${MOUNTO//\//\\/}'$/ {print 1024*$4}'
 # percentage
-[ $percent ] && df | awk '/'${MOUNTI//\//\\/}'$/ {sub(/%$/,"",$5); print $5}'
+[ $percent ] && df | awk '/'${MOUNTO//\//\\/}'$/ {sub(/%$/,"",$5); print $5}'
 
 # Line 3
 # 82360.60 163181.37
