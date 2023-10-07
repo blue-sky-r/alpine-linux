@@ -19,7 +19,7 @@ _about_="disk free probe for mrtg"
 
 # version
 #
-_version_="2023.09.05"
+_version_="2023.10.07"
 
 # github
 #
@@ -29,15 +29,20 @@ _github_="https://github.com/blue-sky-r/alpine-linux/blob/main/mrtg/usr/bin/mrtg
 #
 mp='/'
 
+# default is not percentage but number of blocks
+#
+percent=
+
 # usage help
 #
 [ "$1" == "-h" ] && cat <<< """
 = $_about_ = ver $_version_ =
 
-usage: $0 [-h] [-d] [[mount1] [mount2]]
+usage: $0 [-h] [-d] [%] [[mount1] [mount2]]
 
 -h       ... show this usage help
 -d       ... print additional debug info
+%        ... return percenrage instead of number of 1-k blocks
 mount1   ... mount point I (default $mp)
 mount2   ... mount point O (default $mp)
 
@@ -48,17 +53,28 @@ $_github_
 #
 [ "$1" == "-d" ] && DBG=1 && shift
 
+# optional percentage
+#
+[ "$1" == "%" ] && percent=1 && shift
+
 # df
 #
 MOUNTI=${1:-$mp}
-[ $DBG ] && echo -n "DBG.I: mount-point[$MOUNTI] "
-df | awk '/'${MOUNTI//\//\\/}'$/ {print 1024*$4}'
+[ $DBG ] && echo -n "DBG.I: mount-point[$MOUNTI] percent[$percent] "
+# 1-k blocks
+[ ! $percent ] && df -k | awk '/'${MOUNTI//\//\\/}'$/ {print 1024*$4}'
+# percentage
+[ $percent ] && df | awk '/'${MOUNTI//\//\\/}'$/ {sub(/%$/,"",$5); print $5}'
+
 
 # df
 #
 MOUNTO=${2:-$mp}
-[ $DBG ] && echo -n "DBG.O: mount-point[$MOUNTO] "
-df | awk '/'${MOUNTO//\//\\/}'$/ {print 1024*$4}'
+[ $DBG ] && echo -n "DBG.O: mount-point[$MOUNTO] percent[$percent] "
+# 1-k blocks
+[ ! $percent ] && df -k | awk '/'${MOUNTO//\//\\/}'$/ {print 1024*$4}'
+# percentage
+[ $percent ] && df | awk '/'${MOUNTI//\//\\/}'$/ {sub(/%$/,"",$5); print $5}'
 
 # Line 3
 # 82360.60 163181.37
